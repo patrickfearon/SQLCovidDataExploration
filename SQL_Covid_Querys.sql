@@ -97,7 +97,7 @@ JOIN PortfolioProject.dbo.CovidVaccinations AS V
 WHERE D.continent is not null
 order by 2,3
 
--- USE CTE or 'Common Table Expression' perform Calculation on Partition By in previous query
+-- USE CTE or 'Common Table Expression' to perform a calculation on Partition By in previous query
 -- Vaccination percentage may go over 100% in some cases as people recieve more than one vaccine dose
 
 WITH PopvsVac (continent, location, date, population, new_vaccinations, Rolling_Count_of_Vaccinations)
