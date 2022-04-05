@@ -1,3 +1,8 @@
+/*
+Covid-19 Data Exploration Using SQL
+Skills used: Joins, CTE's, Temp Tables, Windows Functions, Aggregate Functions, Creating Views, Converting Data Types
+*/
+
 SELECT *
 FROM PortfolioProject.dbo.CovidDeaths
 Where continent is not null
@@ -13,6 +18,7 @@ order by 1,2 -- Order by location and date
 
 -- Looking at the Total Cases Vs total Deaths
 -- Shows the likelihood of dying if you contract covid in the United Kingdom
+
 SELECT Location, date, total_cases, total_deaths, (total_deaths/total_cases)*100 AS DeathPercentage
 FROM PortfolioProject.dbo.CovidDeaths
 Where location = 'United Kingdom'
@@ -28,6 +34,7 @@ order by 1,2
 
 
 -- Exploring countries which have highest infection rate compared to population
+
 SELECT Location, population, MAX(total_cases) AS HighestInfectionCount, MAX((total_cases/population))*100 AS PopulationInfectedPercentage
 FROM PortfolioProject.dbo.CovidDeaths
 Where continent is not null
@@ -36,6 +43,7 @@ order by PopulationInfectedPercentage DESC
 
 
 -- Shows countries with the highest death count per population
+
 SELECT Location, MAX(CAST(total_deaths as int)) AS TotalDeathCount
 FROM PortfolioProject.dbo.CovidDeaths
 Where continent is not null
@@ -43,7 +51,7 @@ Group by Location
 order by TotalDeathCount DESC
 
 -- Breaking data down by continent
--- Showing the continents with the highest death count
+-- Showing the continents with the highest death count per population
 
 SELECT continent, MAX(CAST(total_deaths as int)) AS TotalDeathCount
 FROM PortfolioProject.dbo.CovidDeaths
@@ -53,8 +61,7 @@ order by TotalDeathCount DESC
 
 
 -- GLOBAL NUMBERS
-
--- Per day
+-- Total cases and deaths worldwide broken down by date
 
 SELECT date, SUM(new_cases) AS Total_Cases, SUM(CAST(new_deaths as int)) AS Total_Deaths, SUM(CAST(new_deaths as int))/SUM(new_cases)*100 AS DeathPercentage  
 FROM PortfolioProject.dbo.CovidDeaths
@@ -80,6 +87,7 @@ and D.date = V.date
 
 -- Looking at Total Population vs Vacinations
 -- Starting query to get rolling count of vaccinations partitioned by location and date
+-- Shows Percentage of Population that has recieved at least one Covid Vaccine
 
 SELECT D.continent, D.location, D.date, D.population, V.new_vaccinations, SUM(CAST(V.new_vaccinations as bigint)) OVER (Partition by D.location Order by D.Location, D.Date ROWS UNBOUNDED PRECEDING) AS Rolling_Count_of_Vaccinations
 FROM PortfolioProject.dbo.CovidDeaths AS D
@@ -89,8 +97,8 @@ JOIN PortfolioProject.dbo.CovidVaccinations AS V
 WHERE D.continent is not null
 order by 2,3
 
--- USE CTE or 'Common Table Expression'
--- Note, Vaccination percentage will go over 100% in some cases as people recieve more than one vaccine dose
+-- USE CTE or 'Common Table Expression' perform Calculation on Partition By in previous query
+-- Vaccination percentage may go over 100% in some cases as people recieve more than one vaccine dose
 
 WITH PopvsVac (continent, location, date, population, new_vaccinations, Rolling_Count_of_Vaccinations)
 as 
@@ -106,7 +114,8 @@ SELECT *, (Rolling_Count_of_Vaccinations/population)*100 AS Percent_of_populatio
 FROM PopvsVac
 
 
---Temp TABLE
+--TEMP TABLE
+-- Using a Temp Table to perform a calculation on Partition By in previous query
 -- Have to specify data type as well
 
 Create Table #PercentPopulationVaccinated
@@ -172,6 +181,7 @@ JOIN PortfolioProject.dbo.CovidVaccinations AS V
 WHERE D.continent is not null
 
 
+-- Checking the view
 
 SELECT *
 FROM PercentPopulationVaccinated
